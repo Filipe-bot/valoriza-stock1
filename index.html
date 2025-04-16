@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valoriza Stock</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Times New Roman', serif;
+      background-color: #cc5500;
+    }
+
+    header {
+      background-color: #fff;
+      text-align: center;
+      padding: 20px;
+      border-bottom: 2px solid #ccc;
+    }
+
+    header h1 {
+      margin: 0;
+      color: #cc5500;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      font-style: italic;
+    }
+
+    .form-container {
+      background-color: white;
+      width: 400px;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .form-container h2 {
+      text-align: center;
+      color: #cc5500;
+    }
+
+    .input-group {
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px 10px 10px 35px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .input-group i {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #cc5500;
+    }
+
+    .form-container button {
+      width: 100%;
+      background-color: #cc5500;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .main {
+      padding: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: white;
+      padding: 10px 20px;
+      border-bottom: 2px solid #ccc;
+    }
+
+    .top-bar h2 {
+      color: #cc5500;
+      margin: 0;
+    }
+
+    .top-bar .actions button, .top-bar select {
+      margin-left: 10px;
+      padding: 5px 10px;
+      font-family: 'Times New Roman', serif;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+  <header>
+    <h1>Controlo de Stock</h1>
+    <p>Organize o seu armazém com inteligência</p>
+  </header>
+
+  <div class="form-container">
+    <h2>Registo da Empresa</h2>
+    <div class="input-group">
+      <i class="fas fa-building"></i>
+      <input type="text" placeholder="Nome da Empresa">
+    </div>
+    <div class="input-group">
+      <i class="fas fa-envelope"></i>
+      <input type="email" placeholder="Email">
+    </div>
+    <div class="input-group">
+      <i class="fas fa-phone"></i>
+      <input type="tel" placeholder="Número de Telefone">
+    </div>
+    <button onclick="mostrarFicha()">Registar</button>
+  </div>
+
+  <div class="main" style="display:none;" id="ficha">
+    <div class="top-bar">
+      <h2>Ficha de Armazém</h2>
+      <div class="actions">
+        <button onclick="adicionarLinha('compra')" title="Adicionar Compra"><i class="fas fa-plus"></i> Compra</button>
+        <button onclick="adicionarLinha('venda')" title="Adicionar Venda"><i class="fas fa-minus"></i> Venda</button>
+        <button onclick="adicionarLinha('devolucao')" title="Devolução"><i class="fas fa-undo"></i> Devolução</button>
+        <select id="metodo">
+          <option value="fifo">FIFO</option>
+          <option value="lifo">LIFO</option>
+          <option value="cmp">CMP</option>
+        </select>
+        <button onclick="gerarPDF()">Gerar PDF</button>
+        <button onclick="exportarDados()">Exportar Dados</button>
+        <button onclick="logout()" style="background-color:red; color:white;">Logout</button>
+      </div>
+    </div>
+
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Entrada (Qtd * Preço = Valor)</th>
+          <th>Saída (Qtd * Preço = Valor)</th>
+          <th>Existências (Qtd * Preço = Valor)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    function mostrarFicha() {
+      document.querySelector('.form-container').style.display = 'none';
+      document.getElementById('ficha').style.display = 'block';
+    }
+
+    function adicionarLinha(tipo) {
+      const tabela = document.getElementById('tabela').querySelector('tbody');
+      const row = document.createElement('tr');
+      const dataAtual = new Date().toLocaleDateString();
+
+      const descricao = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+      const quant = Math.floor(Math.random() * 10 + 1);
+      const preco = Math.floor(Math.random() * 100 + 1);
+      const valor = quant * preco;
+
+      let entrada = '', saida = '';
+      if (tipo === 'compra' || tipo === 'devolucao') entrada = `${quant} * ${preco} = ${valor}`;
+      if (tipo === 'venda') saida = `${quant} * ${preco} = ${valor}`;
+
+      const existencia = `${quant} * ${preco} = ${valor}`;
+
+      row.innerHTML = `
+        <td>${dataAtual}</td>
+        <td>${descricao}</td>
+        <td>${entrada}</td>
+        <td>${saida}</td>
+        <td>${existencia}</td>
+      `;
+      tabela.appendChild(row);
+    }
+
+    function gerarPDF() {
+      alert("Função de geração de PDF ainda não implementada.");
+    }
+
+    function exportarDados() {
+      alert("Função de exportação ainda não implementada.");
+    }
+
+    function logout() {
+      location.reload();
+    }
+  </script>
+</body>
+</html>
